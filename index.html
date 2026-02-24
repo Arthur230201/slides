@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Covenant 智能交付系统</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=Inter:wght@400;600;700&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#ffffff;--surface:#f8f9fa;--border:rgba(0,0,0,0.08);
+  --text:#1e293b;--dim:#64748b;
+  --blue:#1d4ed8;--green:#059669;--amber:#d97706;--red:#dc2626;
+}
+html,body{width:100%;height:100%;font-family:'Inter','Noto Sans SC',system-ui,sans-serif;background:var(--bg);color:var(--text);overflow:hidden;-webkit-font-smoothing:antialiased;}
+
+.slide{width:100%;height:100%;position:absolute;inset:0;display:flex;flex-direction:column;opacity:0;pointer-events:none;transition:opacity 0.5s ease;z-index:1;}
+.slide.active{opacity:1;pointer-events:auto;z-index:2;}
+
+.slide.active .fi{animation:fi 0.6s ease both;}
+@keyframes fi{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.slide.active .fi:nth-child(1){animation-delay:0.05s}
+.slide.active .fi:nth-child(2){animation-delay:0.15s}
+.slide.active .fi:nth-child(3){animation-delay:0.25s}
+.slide.active .fi:nth-child(4){animation-delay:0.35s}
+.slide.active .fi:nth-child(5){animation-delay:0.45s}
+.slide.active .fi:nth-child(6){animation-delay:0.55s}
+
+.label{font-size:11px;letter-spacing:5px;text-transform:uppercase;color:var(--blue);font-weight:600;margin-bottom:12px;}
+.pg{padding:70px 80px;display:flex;flex-direction:column;justify-content:center;}
+.split{display:grid;grid-template-columns:1fr 1fr;height:100%;}
+.split-l{display:flex;flex-direction:column;justify-content:center;padding:70px 60px 70px 80px;border-right:1px solid var(--border);}
+.split-r{display:flex;flex-direction:column;justify-content:center;padding:70px 80px 70px 60px;gap:14px;}
+
+h2{font-size:40px;font-weight:700;line-height:1.25;letter-spacing:-0.5px;margin-bottom:16px;}
+h2 em{font-style:normal;color:var(--blue);}
+p.desc{font-size:15px;color:var(--dim);line-height:1.7;max-width:440px;}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px 28px;transition:border-color 0.3s;}
+.card:hover{border-color:rgba(29,78,216,0.3);}
+.card h4{font-size:16px;font-weight:600;margin-bottom:4px;}
+.card p{font-size:13px;color:var(--dim);line-height:1.6;}
+.card-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:10px;vertical-align:middle;}
+</style>
+</head>
+<body>
+<div class="progress" id="progress" style="position:fixed;top:0;left:0;height:2px;background:var(--blue);transition:width 0.4s;z-index:100;"></div>
+<div class="page-ind" id="pageNum" style="position:fixed;bottom:28px;left:36px;z-index:100;font-size:12px;color:rgba(0,0,0,0.2);font-weight:400;letter-spacing:2px;font-family:Inter;"></div>
+<div class="nav" style="position:fixed;bottom:24px;right:36px;display:flex;gap:10px;z-index:100;">
+  <button onclick="prev()" style="width:38px;height:38px;border-radius:50%;border:1px solid rgba(0,0,0,0.1);background:rgba(0,0,0,0.03);color:var(--text);font-size:15px;cursor:pointer;">←</button>
+  <button onclick="next()" style="width:38px;height:38px;border-radius:50%;border:1px solid rgba(0,0,0,0.1);background:rgba(0,0,0,0.03);color:var(--text);font-size:15px;cursor:pointer;">→</button>
+</div>
+<div id="deck">
+
+<!-- S1: 封面 -->
+<div class="slide active" style="justify-content:center;align-items:center;text-align:center;padding:80px;position:relative;overflow:hidden;">
+  <!-- Grid background -->
+  <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(0,0,0,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,0,0,0.03) 1px,transparent 1px);background-size:48px 48px;pointer-events:none;"></div>
+  <!-- Ambient glow -->
+  <div style="position:absolute;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(29,78,216,0.06) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;"></div>
+
+  <!-- Tag -->
+  <div class="fi" style="display:inline-block;font-size:11px;letter-spacing:6px;text-transform:uppercase;color:var(--dim);font-weight:500;padding:7px 18px;border-radius:100px;background:rgba(0,0,0,0.03);border:1px solid rgba(0,0,0,0.08);margin-bottom:52px;position:relative;z-index:2;">产品介绍 · 2026</div>
+
+  <!-- Title -->
+  <div class="fi" style="position:relative;z-index:2;margin-bottom:32px;">
+    <div style="font-family:'Space Grotesk',sans-serif;font-size:72px;font-weight:700;letter-spacing:-2px;line-height:1;color:var(--text);margin-bottom:8px;">Covenant</div>
+    <div style="font-family:'Noto Sans SC',sans-serif;font-size:36px;font-weight:300;letter-spacing:4px;line-height:1.4;color:var(--blue);">智能交付系统</div>
+  </div>
+
+  <!-- Glass card with 3 features -->
+  <div class="fi" style="position:relative;z-index:2;display:flex;gap:40px;padding:24px 40px;border-radius:16px;background:rgba(0,0,0,0.02);border:1px solid rgba(0,0,0,0.06);backdrop-filter:blur(12px);">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--dim)" stroke-width="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      <span style="font-size:13px;color:var(--dim);letter-spacing:1.5px;">对话驱动</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--dim)" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      <span style="font-size:13px;color:var(--dim);letter-spacing:1.5px;">内容块架构</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--dim)" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      <span style="font-size:13px;color:var(--dim);letter-spacing:1.5px;">全程可追溯</span>
+    </div>
+  </div>
+
+  <div class="fi" style="position:absolute;bottom:36px;font-size:12px;color:rgba(0,0,0,0.2);letter-spacing:2px;z-index:2;">北京积鲲智能科技有限公司</div>
+</div>
+
+<!-- S2: 现状 -->
+<div class="slide split">
+  <div class="split-l">
+    <div class="fi label">现状</div>
+    <h2 class="fi">交付团队每天<br>都在重复<em>低效劳动</em></h2>
+    <p class="fi desc">一份标书平均需要 5 个工作日，其中 60% 的时间花在找材料、对格式、改版本上——而非思考内容本身。</p>
+  </div>
+  <div class="split-r">
+    <div class="card fi"><div><span class="card-dot" style="background:var(--red)"></span><h4>材料分散</h4></div><p>需求文档、会议纪要、调研报告散落在邮件、网盘、聊天记录中</p></div>
+    <div class="card fi"><div><span class="card-dot" style="background:var(--amber)"></span><h4>修改成本高</h4></div><p>评审一轮改一轮，每次修改几乎从头来过</p></div>
+    <div class="card fi"><div><span class="card-dot" style="background:var(--amber)"></span><h4>版本失控</h4></div><p>v1、v2、v3-final-最终版，没人说得清哪个是对的</p></div>
+    <div class="card fi"><div><span class="card-dot" style="background:var(--red)"></span><h4>来源不可追溯</h4></div><p>这段话谁写的？依据是什么？验收时说不清楚</p></div>
+  </div>
+</div>
+
+<!-- S3: 愿景 -->
+<div class="slide pg" style="align-items:center;text-align:center;">
+  <div class="fi label">愿景</div>
+  <h2 class="fi" style="font-size:44px;max-width:700px;">如果交付可以像<em>对话</em>一样简单？</h2>
+  <p class="fi desc" style="max-width:560px;margin-top:8px;text-align:center;">你描述需求，系统理解意图，自动从材料库中提取信息，生成结构化的交付物——每一段内容都有据可查。</p>
+</div>
+
+<!-- S4: 方案 -->
+<div class="slide pg">
+  <div class="fi label">解决方案</div>
+  <h2 class="fi">四步完成交付</h2>
+  <div class="fi" style="display:flex;align-items:center;gap:0;margin-top:40px;justify-content:center;">
+    <div style="text-align:center;min-width:160px;">
+      <div style="width:64px;height:64px;border-radius:16px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--dim)" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/></svg>
+      </div>
+      <div style="font-size:14px;font-weight:500;">导入材料</div>
+      <div style="font-size:12px;color:var(--dim);margin-top:4px;">文档、纪要、数据</div>
+    </div>
+    <div style="width:48px;height:1px;background:var(--border);margin-bottom:24px;"></div>
+    <div style="text-align:center;min-width:160px;">
+      <div style="width:64px;height:64px;border-radius:16px;background:rgba(29,78,216,0.06);border:1px solid rgba(29,78,216,0.15);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      </div>
+      <div style="font-size:14px;font-weight:500;">对话生成</div>
+      <div style="font-size:12px;color:var(--dim);margin-top:4px;">自然语言描述需求</div>
+    </div>
+    <div style="width:48px;height:1px;background:var(--border);margin-bottom:24px;"></div>
+    <div style="text-align:center;min-width:160px;">
+      <div style="width:64px;height:64px;border-radius:16px;background:rgba(5,150,105,0.06);border:1px solid rgba(5,150,105,0.15);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      </div>
+      <div style="font-size:14px;font-weight:500;">内容块编辑</div>
+      <div style="font-size:12px;color:var(--dim);margin-top:4px;">逐块调整、替换</div>
+    </div>
+    <div style="width:48px;height:1px;background:var(--border);margin-bottom:24px;"></div>
+    <div style="text-align:center;min-width:160px;">
+      <div style="width:64px;height:64px;border-radius:16px;background:rgba(217,119,6,0.06);border:1px solid rgba(217,119,6,0.15);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="1.5"><path d="M21 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3"/><path d="m9 15 3 3 8-8"/></svg>
+      </div>
+      <div style="font-size:14px;font-weight:500;">导出交付</div>
+      <div style="font-size:12px;color:var(--dim);margin-top:4px;">Word / PDF / 在线文档</div>
+    </div>
+  </div>
+</div>
+
+<!-- S5: 核心能力 -->
+<div class="slide split">
+  <div class="split-l">
+    <div class="fi label">核心能力</div>
+    <h2 class="fi">五项能力<br>支撑<em>可靠交付</em></h2>
+    <p class="fi desc">不是替代人，而是让人专注于判断和决策，把重复劳动交给系统。</p>
+  </div>
+  <div class="split-r" style="gap:10px;">
+    <div class="fi" style="display:flex;align-items:center;gap:16px;padding:16px 0;border-bottom:1px solid var(--border);">
+      <div style="font-size:24px;font-weight:700;color:rgba(0,0,0,0.08);min-width:40px;font-family:Inter;">01</div>
+      <div style="width:3px;height:40px;border-radius:3px;background:var(--blue);flex-shrink:0;"></div>
+      <div><h4 style="font-size:15px;font-weight:600;margin-bottom:2px;">统一对话入口</h4><p style="font-size:13px;color:var(--dim);">自然语言描述需求，系统理解并执行</p></div>
+    </div>
+    <div class="fi" style="display:flex;align-items:center;gap:16px;padding:16px 0;border-bottom:1px solid var(--border);">
+      <div style="font-size:24px;font-weight:700;color:rgba(0,0,0,0.08);min-width:40px;font-family:Inter;">02</div>
+      <div style="width:3px;height:40px;border-radius:3px;background:var(--green);flex-shrink:0;"></div>
+      <div><h4 style="font-size:15px;font-weight:600;margin-bottom:2px;">内容块架构</h4><p style="font-size:13px;color:var(--dim);">每个块独立可编辑、可替换、可复用</p></div>
+    </div>
+    <div class="fi" style="display:flex;align-items:center;gap:16px;padding:16px 0;border-bottom:1px solid var(--border);">
+      <div style="font-size:24px;font-weight:700;color:rgba(0,0,0,0.08);min-width:40px;font-family:Inter;">03</div>
+      <div style="width:3px;height:40px;border-radius:3px;background:#0891b2;flex-shrink:0;"></div>
+      <div><h4 style="font-size:15px;font-weight:600;margin-bottom:2px;">智能引导补全</h4><p style="font-size:13px;color:var(--dim);">信息不足时主动追问，确保内容有依据</p></div>
+    </div>
+    <div class="fi" style="display:flex;align-items:center;gap:16px;padding:16px 0;border-bottom:1px solid var(--border);">
+      <div style="font-size:24px;font-weight:700;color:rgba(0,0,0,0.08);min-width:40px;font-family:Inter;">04</div>
+      <div style="width:3px;height:40px;border-radius:3px;background:var(--amber);flex-shrink:0;"></div>
+      <div><h4 style="font-size:15px;font-weight:600;margin-bottom:2px;">全程可追溯</h4><p style="font-size:13px;color:var(--dim);">每段内容标注来源，验收有据可查</p></div>
+    </div>
+    <div class="fi" style="display:flex;align-items:center;gap:16px;padding:16px 0;">
+      <div style="font-size:24px;font-weight:700;color:rgba(0,0,0,0.08);min-width:40px;font-family:Inter;">05</div>
+      <div style="width:3px;height:40px;border-radius:3px;background:#9333ea;flex-shrink:0;"></div>
+      <div><h4 style="font-size:15px;font-weight:600;margin-bottom:2px;">版本可回滚</h4><p style="font-size:13px;color:var(--dim);">每次操作自动创建版本点，随时回退</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- S6: S.T.A.R. 数据冲击 -->
+<div class="slide pg" style="align-items:center;text-align:center;">
+  <div class="fi label">预期效果</div>
+  <h2 class="fi" style="margin-bottom:48px;">一份标书，从 <em>5 天</em> 到 <em>2 小时</em></h2>
+  <div class="fi" style="display:flex;gap:80px;justify-content:center;">
+    <div style="text-align:center;">
+      <div style="font-size:56px;font-weight:700;color:var(--blue);font-family:Inter;line-height:1;">70%</div>
+      <div style="font-size:14px;color:var(--dim);margin-top:10px;">初稿生成时间缩短</div>
+    </div>
+    <div style="text-align:center;">
+      <div style="font-size:56px;font-weight:700;color:var(--green);font-family:Inter;line-height:1;">100%</div>
+      <div style="font-size:14px;color:var(--dim);margin-top:10px;">内容来源可追溯</div>
+    </div>
+    <div style="text-align:center;">
+      <div style="font-size:56px;font-weight:700;color:var(--amber);font-family:Inter;line-height:1;">3x</div>
+      <div style="font-size:14px;color:var(--dim);margin-top:10px;">迭代效率提升</div>
+    </div>
+  </div>
+  <p class="fi" style="font-size:13px;color:var(--dim);margin-top:40px;max-width:500px;">相当于一个 3 人交付团队，每周多出 60 小时用于思考方案本身，而非格式和版本。</p>
+</div>
+
+<!-- S7: 愿景终局 -->
+<div class="slide pg" style="align-items:center;text-align:center;">
+  <div class="fi label">终局</div>
+  <h2 class="fi" style="font-size:44px;max-width:700px;">交付团队从<em>执行者</em><br>变为<em>审核者</em></h2>
+  <p class="fi desc" style="max-width:520px;margin-top:12px;text-align:center;">人负责判断、决策、把关质量。<br>系统负责搜集、组装、格式化、追溯。<br>各司其职，效率与质量同时提升。</p>
+</div>
+
+<!-- S8: 结尾 -->
+<div class="slide" style="display:flex;justify-content:center;align-items:center;position:relative;">
+  <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(0,0,0,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,0,0,0.03) 1px,transparent 1px);background-size:60px 60px;"></div>
+  <div style="position:relative;z-index:2;text-align:center;">
+    <h2 class="fi" style="font-size:48px;font-weight:700;color:var(--blue);margin-bottom:20px;">谢谢</h2>
+    <div class="fi" style="width:48px;height:1px;background:var(--border);margin:0 auto 20px;"></div>
+    <p class="fi" style="font-size:13px;color:var(--dim);letter-spacing:2px;">北京积鲲智能科技有限公司 · 2026</p>
+  </div>
+</div>
+
+</div><!-- /deck -->
+
+<script>
+const slides=document.querySelectorAll('.slide');
+let cur=0;const total=slides.length;
+function show(n){
+  slides.forEach(s=>s.classList.remove('active'));
+  slides[n].classList.add('active');cur=n;
+  document.getElementById('progress').style.width=((n+1)/total*100)+'%';
+  document.getElementById('pageNum').textContent=String(n+1).padStart(2,'0')+' / '+String(total).padStart(2,'0');
+}
+function next(){if(cur<total-1)show(cur+1);}
+function prev(){if(cur>0)show(cur-1);}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();next();}if(e.key==='ArrowLeft'){e.preventDefault();prev();}});
+let tx=0;
+document.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;});
+document.addEventListener('touchend',e=>{const d=tx-e.changedTouches[0].clientX;if(Math.abs(d)>50){d>0?next():prev();}});
+show(0);
+</script>
+</body>
+</html>
